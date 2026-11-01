@@ -47,7 +47,7 @@ En local: `pnpm wrangler:dev` (`astro build` + `wrangler dev`). En producción, 
 | `src/components/` | Islas React                                                   |
 | `src/pages/`      | Landings SEO en `.astro` (JS en cero por defecto)             |
 | `src/content/`    | FAQ, glosario y resúmenes de artículos (colecciones Markdown) |
-| `src/layouts/`    | Cascara HTML, `lang="es-CO"`                                  |
+| `src/layouts/`    | Cáscara HTML, `lang="es-CO"`                                  |
 | `tests/engine/`   | Vitest                                                        |
 | `public/_headers` | CSP y cabeceras                                               |
 | `docs/`           | Conocimiento del proyecto que no va en README/CONTRIBUTING    |
