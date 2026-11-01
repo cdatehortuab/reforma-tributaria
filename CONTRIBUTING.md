@@ -12,16 +12,35 @@ Este archivo es la fuente de verdad para cambiar el código. [README.md](./READM
 
 ## Política de ramas
 
-Nadie con acceso de escritura empuja directo a `main`. Todo cambio, incluido el de quien mantiene el repo, entra por pull request.
+`dev` es la rama de integración y la predeterminada en GitHub. `main` es la rama de release: lo que está en producción sale de un tag sobre `main`. Nadie con acceso de escritura empuja directo a `dev` ni a `main`. Todo cambio entra por pull request y se fusiona solo con el check `ci` en verde.
 
-- El PR se fusiona cuando el check de GitHub Actions llamado `ci` está en verde.
 - CI **no** exige reseñas.
 - Quien tiene acceso de escritura fusiona sus propios pull requests sin reseña, una vez CI está verde.
-- Un contribuyente externo (sin write) también abre un PR y necesita CI verde. Antes de fusionar un PR externo, quien tiene write deja una reseña de aprobación. Esa aprobación es parte del merge, no un job de CI.
-- **Solo squash.** Merge commits y rebase están desactivados. El título del PR es el asunto del commit que queda en `main`.
-- No hay force-push a `main`.
+- Un contribuyente externo (sin write) abre el PR contra `dev` y necesita CI verde. Antes de fusionar un PR externo, quien tiene write deja una reseña de aprobación. Esa aprobación es parte del merge, no un job de CI.
+- No hay force-push a `dev` ni a `main`.
 
-Convenciones de PR y commit: el título del PR es el mensaje de commit en `main`, así que escríbelo como tal: corto, en español o inglés, en modo indicativo, que explique el **porqué**. Un PR, un tema. Si el proyecto de ley cambia, el título o la descripción deben citar el artículo y la fuente.
+### Cambios (hacia `dev`)
+
+Los PRs de trabajo apuntan a `dev`, son atómicos (un PR, un tema) y se fusionan **solo con squash**. El título del PR es el asunto del commit que queda en `dev`. Escríbelo como mensaje de commit: corto, en español o inglés, en modo indicativo, que explique el **porqué**. Si el proyecto de ley cambia, el título o la descripción deben citar el artículo y la fuente.
+
+### Release (de `dev` a `main`)
+
+Un release es un PR de `dev` hacia `main`, abierto por alguien con write.
+
+GitHub no ofrece fast-forward verdadero en un PR (rebase reescribe SHA). Elige así:
+
+1. **Rebase and merge** cuando `main` no tiene commits que falten en `dev` (el caso lineal; es lo más cercano a un fast-forward).
+2. **Create a merge commit** cuando `main` sí tiene commits que no están en `dev`. Después, trae `main` de vuelta a `dev` con otro PR para no divergir.
+
+Squash hacia `main` está desactivado: los commits que ya están en `main` no se reescriben.
+
+Después de fusionar ese PR:
+
+1. El número de versión ya debe estar en `package.json` (súbelo antes, en un PR atómico a `dev`).
+2. En `main`: `git tag vX.Y.Z` con el mismo valor que `package.json`, y `git push origin vX.Y.Z`.
+3. El workflow `release` crea el GitHub Release y mueve la rama `production` a ese commit. Cloudflare Workers Builds publica **solo** cuando se mueve `production`, no en cada push a `main`.
+
+No hagas push a `production`. No subas un tag que no esté en `main` ni que no coincida con `package.json`.
 
 ## Checks, en este orden, antes de dar un cambio por terminado
 
@@ -42,7 +61,8 @@ El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archiv
 - `.astro/`, `.wrangler/`, `coverage/`, `node_modules/` y `.env*` tampoco.
 - El lockfile es `pnpm-lock.yaml`. No commitees `package-lock.json`.
 - Los scripts de build de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`).
-- No hay secretos en el repo. El deploy a Cloudflare lo hace Workers Builds (repo enlazado en el dashboard), no GitHub Actions. GitHub solo corre el check `ci`.
+- No hay secretos en el repo. GitHub Actions corre el check `ci` y, en un tag `v*`, el workflow `release` (GitHub Release + mover `production`). Cloudflare Workers Builds publica producción desde `production` y previews desde el resto de ramas; no hace falta un token de Cloudflare en GitHub.
+- No hagas push a `production`.
 
 ## Mapa de `docs/`
 
@@ -63,7 +83,7 @@ No copies este material a README ni a AGENTS.md. Ábrelo cuando lo necesites:
 2. Actualiza la fecha «actualizado al» en esos archivos y en la UI.
 3. Anota la fuente (Gaceta, ponencia, texto aprobado) en `docs/parametros.md`.
 4. Añade o ajusta fixtures en `tests/engine/` con el resultado esperado.
-5. Corre los cuatro checks de arriba y abre un PR.
+5. Corre los cuatro checks de arriba y abre un PR contra `dev`.
 
 Si cambia la norma vigente y no el proyecto, el archivo es `src/engine/params/vigente.ts`.
 

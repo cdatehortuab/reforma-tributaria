@@ -2,7 +2,7 @@
 
 Estimación aproximada del efecto del proyecto de ley 477 de 2026 sobre salarios, IVA de alimentos y otros impuestos en Colombia. El código vive en [este repositorio](https://github.com/cdatehortuab/reforma-tributaria).
 
-El sitio se publica como assets estáticos en Cloudflare Workers. El check `ci` vive en GitHub; el deploy, en Workers Builds al enlazar el repo en el dashboard (rama `main` a producción, el resto a Preview URLs). Todavía no hay un despliegue de producción.
+El sitio se publica como assets estáticos en Cloudflare Workers. El check `ci` vive en GitHub. La producción se publica en un tag `v*` (el workflow `release` mueve la rama `production`; Workers Builds despliega esa rama). `dev` y el resto de ramas son Preview URLs. Todavía no hay un despliegue de producción.
 
 ## Cómo correrlo
 

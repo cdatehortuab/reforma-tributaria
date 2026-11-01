@@ -25,7 +25,11 @@ Cloudflare dirige proyectos nuevos aquí (Pages queda en mantenimiento). Servir 
 
 `wrangler.jsonc` apunta `assets.directory` a `./dist` y usa `not_found_handling: "404-page"` para respetar el 404 de Astro. `single-page-application` serviría `index.html` y ocultaría 404 reales.
 
-En local: `pnpm wrangler:dev` (`astro build` + `wrangler dev`). En producción, Workers Builds (repo enlazado en el dashboard de Cloudflare) corre `pnpm build` y `pnpm exec wrangler deploy` al fusionar a `main`. Los previews de ramas distintas de `main` los publica Cloudflare; GitHub Actions no despliega.
+En local: `pnpm wrangler:dev` (`astro build` + `wrangler dev`).
+
+Producción: un tag `v*` en `main` dispara el workflow `release`, que crea el GitHub Release y apunta la rama `production` a ese commit. Workers Builds (repo enlazado en el dashboard) usa `production` como rama de producción y publica una vez por release. Un merge a `main` o un bump de versión que aún no está tagueado no sale a producción.
+
+Previews: Workers Builds en ramas que no son `production` (`dev`, PRs). GitHub Actions no despliega; no hay token de Cloudflare en GitHub.
 
 ## CSP y privacidad
 
