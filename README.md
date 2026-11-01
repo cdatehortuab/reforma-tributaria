@@ -1,43 +1,36 @@
-# Astro Starter Kit: Minimal
+# Calculadora reforma tributaria 2026
+
+Estimación aproximada del efecto del [proyecto de ley 477 de 2026](https://github.com/cdatehortuab/reforma-tributaria) sobre salarios, IVA de alimentos y otros impuestos en Colombia.
+
+El sitio está pensado para publicarse como assets estáticos en Cloudflare Workers (`reforma-tributaria.*.workers.dev` o un dominio propio). Todavía no hay un despliegue de producción.
+
+## Cómo correrlo
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+El servidor de desarrollo queda en `http://localhost:4321`.
 
-## 🚀 Project Structure
+Otros comandos:
 
-Inside of your Astro project, you'll see the following folders and files:
+| Comando                | Acción                            |
+| :--------------------- | :-------------------------------- |
+| `npm run typecheck`    | Comprueba tipos con `astro check` |
+| `npm run lint`         | ESLint con `--max-warnings=0`     |
+| `npm run test`         | Vitest                            |
+| `npm run build`        | Genera `dist/`                    |
+| `npm run wrangler:dev` | Sirve el build con Wrangler       |
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+Los cálculos viven en `src/engine/` y se ejecutan solo en el navegador.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Licencia
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+[MIT](./LICENSE). El código es público y no incluye secretos.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Aviso
 
-## 🧞 Commands
+Tus datos no salen de tu navegador. Es un proyecto de ley en trámite; puede cambiar. Estimación aproximada, **no es asesoría tributaria**.
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Para contribuir, lee [CONTRIBUTING.md](./CONTRIBUTING.md).

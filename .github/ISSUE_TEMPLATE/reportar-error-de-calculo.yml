@@ -1,0 +1,45 @@
+name: Reportar error de cálculo
+description: Reporta un resultado incorrecto de la calculadora
+title: '[cálculo] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar un error. Describe el escenario con los mismos datos que usaste en la calculadora.
+        Recuerda: esto es una estimación aproximada de un proyecto de ley en trámite; no es asesoría tributaria.
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: Módulo
+      options:
+        - Salario neto e impuesto de renta
+        - Alimentos e IVA
+        - Resumen de impacto anual
+        - Otro
+    validations:
+      required: true
+  - type: textarea
+    id: escenario
+    attributes:
+      label: Datos de entrada
+      description: Salario, tipo (ordinario/integral), deducciones, gastos, Sisbén, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: resultado
+    attributes:
+      label: Resultado que mostró la calculadora
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Resultado que esperabas y por qué
+      description: Si puedes, cita el artículo del ET o del PL 477.
+    validations:
+      required: true
+  - type: input
+    id: actualizado-al
+    attributes:
+      label: Fecha "actualizado al" que viste en la calculadora
