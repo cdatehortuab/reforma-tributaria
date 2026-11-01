@@ -6,22 +6,24 @@ El sitio está pensado para publicarse como assets estáticos en Cloudflare Work
 
 ## Cómo correrlo
 
+El gestor de paquetes es **pnpm** (fijado en `packageManager`). Con Node 22: `corepack enable`.
+
 ```sh
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 El servidor de desarrollo queda en `http://localhost:4321`.
 
 Otros comandos:
 
-| Comando                | Acción                            |
-| :--------------------- | :-------------------------------- |
-| `npm run typecheck`    | Comprueba tipos con `astro check` |
-| `npm run lint`         | ESLint con `--max-warnings=0`     |
-| `npm run test`         | Vitest                            |
-| `npm run build`        | Genera `dist/`                    |
-| `npm run wrangler:dev` | Sirve el build con Wrangler       |
+| Comando             | Acción                            |
+| :------------------ | :-------------------------------- |
+| `pnpm typecheck`    | Comprueba tipos con `astro check` |
+| `pnpm lint`         | ESLint con `--max-warnings=0`     |
+| `pnpm test`         | Vitest                            |
+| `pnpm build`        | Genera `dist/`                    |
+| `pnpm wrangler:dev` | Sirve el build con Wrangler       |
 
 Los cálculos viven en `src/engine/` y se ejecutan solo en el navegador.
 

@@ -25,13 +25,13 @@ Convenciones de PR y commit: mensajes cortos en español o inglés, en modo indi
 ## Checks, en este orden, antes de dar un cambio por terminado
 
 ```sh
-npm run typecheck
-npm run lint
-npm run test
-npm run build
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
 ```
 
-CI ejecuta los mismos cuatro. `npm run lint` usa `--max-warnings=0`: una advertencia falla el build.
+CI ejecuta los mismos cuatro. `pnpm lint` usa `--max-warnings=0`: una advertencia falla el build. El gestor de paquetes es pnpm (`packageManager` en `package.json`); no uses `npm` ni `package-lock.json`.
 
 El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archivos en staging.
 
@@ -39,6 +39,8 @@ El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archiv
 
 - `dist/` es salida de `astro build`. No se versiona.
 - `.astro/`, `.wrangler/`, `coverage/`, `node_modules/` y `.env*` tampoco.
+- El lockfile es `pnpm-lock.yaml`. No commitees `package-lock.json`.
+- Los scripts de build de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`).
 - No hay secretos en el repo. El token de Cloudflare para el deploy vive como secret de GitHub Actions (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).
 
 ## Mapa de `docs/`
