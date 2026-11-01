@@ -17,7 +17,7 @@ Este archivo es la fuente de verdad para cambiar el código. [README.md](./READM
 - CI **no** exige reseñas.
 - Quien tiene acceso de escritura fusiona sus propios pull requests sin reseña, una vez CI está verde.
 - Un contribuyente externo (sin write) abre el PR contra `dev` y necesita CI verde. Antes de fusionar un PR externo, quien tiene write deja una reseña de aprobación. Esa aprobación es parte del merge, no un job de CI.
-- No hay force-push a `dev` ni a `main`.
+- No hay force-push a `dev` ni a `main`. `production` solo la actualiza el workflow **Deploy** (`github-actions[bot]`); el ruleset bloquea cualquier otro push.
 
 ### Cambios (hacia `dev`)
 
@@ -34,13 +34,14 @@ GitHub no ofrece fast-forward verdadero en un PR (rebase reescribe SHA). Elige a
 
 Squash hacia `main` está desactivado: los commits que ya están en `main` no se reescriben.
 
-Después de fusionar ese PR:
+Después de fusionar ese PR, en Actions, sobre `main`:
 
-1. El número de versión ya debe estar en `package.json` (súbelo antes, en un PR atómico a `dev`).
-2. En `main`: `git tag vX.Y.Z` con el mismo valor que `package.json`, y `git push origin vX.Y.Z`.
-3. El workflow `release` crea el GitHub Release y mueve la rama `production` a ese commit. Cloudflare Workers Builds publica **solo** cuando se mueve `production`, no en cada push a `main`.
+1. Corre el workflow **Release** (`patch` / `minor` / `major`). Sube `package.json`, hace commit en `main`, crea el tag `vX.Y.Z` y el GitHub Release. Luego intenta cherry-pick del commit de versión a `dev`.
+2. Corre el workflow **Deploy** con esa versión. Solo ese workflow puede mover `production`; Cloudflare publica cuando esa rama se mueve.
 
-No hagas push a `production`. No subas un tag que no esté en `main` ni que no coincida con `package.json`.
+Rollback: vuelve a correr **Deploy** en `main` con una versión ya publicada, por ejemplo `1.1.0`. Eso apunta `production` al tag `v1.1.0`. No reescribe `main` ni `dev`; si el fallo debe salir también del código, revierte en `dev` y haz un release nuevo.
+
+No hagas push a `production` ni crees tags a mano.
 
 ## Checks, en este orden, antes de dar un cambio por terminado
 
@@ -61,8 +62,7 @@ El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archiv
 - `.astro/`, `.wrangler/`, `coverage/`, `node_modules/` y `.env*` tampoco.
 - El lockfile es `pnpm-lock.yaml`. No commitees `package-lock.json`.
 - Los scripts de build de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`).
-- No hay secretos en el repo. GitHub Actions corre el check `ci` y, en un tag `v*`, el workflow `release` (GitHub Release + mover `production`). Cloudflare Workers Builds publica producción desde `production` y previews desde el resto de ramas; no hace falta un token de Cloudflare en GitHub.
-- No hagas push a `production`.
+- No hay secretos en el repo. GitHub Actions corre el check `ci`, el workflow **Release** (versión + tag + GitHub Release) y el workflow **Deploy** (apunta `production` a un tag). Cloudflare Workers Builds publica producción desde `production` y previews desde el resto de ramas; no hace falta un token de Cloudflare en GitHub.
 
 ## Mapa de `docs/`
 

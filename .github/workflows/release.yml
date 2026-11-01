@@ -1,9 +1,16 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the semver to increment
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
 
 concurrency:
   group: release
@@ -13,41 +20,142 @@ permissions:
   contents: write
 
 jobs:
+  guard:
+    name: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Run Release from main, not ${{ github.ref }}"
+          exit 1
+
   release:
     name: release
+    needs: guard
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      sha: ${{ steps.bump.outputs.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: main
 
-      - name: Require the tag to be on main
-        run: |
-          git fetch origin main
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
 
-      - name: Require the tag to match package.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Bump version, tag, and create GitHub Release
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          expected="v$(node -p "require('./package.json').version")"
-          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match package.json ($expected)"
+          set -euo pipefail
+
+          version="$(node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs';
+
+          const bump = process.env.BUMP;
+          if (bump !== 'patch' && bump !== 'minor' && bump !== 'major') {
+            throw new Error(`Unknown bump: ${bump ?? ''}`);
+          }
+
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const parts = pkg.version.split('.').map((part) => Number(part));
+          if (
+            parts.length !== 3 ||
+            parts.some((part) => !Number.isInteger(part) || part < 0)
+          ) {
+            throw new Error(`package.json version is not semver X.Y.Z: ${pkg.version}`);
+          }
+
+          let [major, minor, patch] = parts;
+          if (bump === 'major') {
+            major += 1;
+            minor = 0;
+            patch = 0;
+          } else if (bump === 'minor') {
+            minor += 1;
+            patch = 0;
+          } else {
+            patch += 1;
+          }
+
+          pkg.version = `${major}.${minor}.${patch}`;
+          writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
+          process.stdout.write(pkg.version);
+          JS
+          )"
+
+          pnpm exec prettier --write package.json
+
+          tag="v${version}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists"
             exit 1
           fi
 
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists"
-          else
-            gh release create "$GITHUB_REF_NAME" \
-              --verify-tag \
-              --generate-notes \
-              --title "$GITHUB_REF_NAME"
-          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json
+          git commit --no-verify -m "Release ${tag}."
+          git push origin HEAD:main
+          git tag "$tag"
+          git push origin "$tag"
 
-      - name: Point production at this tag
-        run: git push --force origin "$GITHUB_SHA:refs/heads/production"
+          gh release create "$tag" --verify-tag --generate-notes --title "$tag"
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  sync-dev:
+    name: sync-dev
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Cherry-pick the version commit onto dev
+        env:
+          SHA: ${{ needs.release.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin dev
+          git switch -C sync-release origin/dev
+          git cherry-pick "$SHA"
+          git push origin HEAD:dev

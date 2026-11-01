@@ -2,13 +2,17 @@
 
 Registro breve. No reabrir sin un hecho nuevo (cambio de producto, de plataforma o de la ley).
 
+## 2026-11-01 — Bypass de GitHub Actions solo para release y `production`
+
+Humanos no tienen bypass en `dev`, `main` ni `production`. `github-actions[bot]` (Actions) sí: en `main` y `dev` para el commit de versión del workflow **Release**; en `production` para el workflow **Deploy**. El resto de reglas (PR, `ci`, squash) sigue valiendo para las personas.
+
 ## 2026-11-01 — `dev` integra, `main` publica, squash solo hacia `dev`
 
 Los PRs de trabajo van a `dev` (rama predeterminada) y se fusionan con squash; el título del PR es el asunto. Un release es un PR de `dev` a `main`: rebase and merge cuando la historia es lineal, merge commit cuando no. Squash hacia `main` está apagado.
 
-## 2026-11-01 — Producción de Cloudflare solo en tags
+## 2026-11-01 — Producción de Cloudflare solo vía workflow Deploy
 
-Workers Builds no dispara por tags. Publicar en cada push a `main` desplegaría dos veces el mismo código si el bump de versión va después del merge. El workflow `release` (tag `v*`) mueve la rama `production` a ese commit; Cloudflare publica producción desde `production` y previews desde las demás ramas. GitHub no guarda un token de Cloudflare.
+Workers Builds no dispara por tags. El workflow **Release** (manual, desde `main`) sube la versión, taguea y crea el GitHub Release. El workflow **Deploy** (manual, versión X.Y.Z) es lo único que puede mover `production`; un rollback es el mismo workflow con una versión anterior. El ruleset de `production` bloquea pushes humanos; solo `github-actions[bot]` tiene bypass. GitHub no guarda un token de Cloudflare.
 
 ## 2026-11-01 — Workers Static Assets, no Pages
 
@@ -24,7 +28,7 @@ La garantía de privacidad tiene que ser comprobable desde la respuesta HTTP. `c
 
 ## 2026-11-01 — Workers Builds, no `wrangler deploy` desde GitHub
 
-GitHub corre `ci` y, en un tag, mueve la rama `production`. El `wrangler deploy` lo hace Cloudflare (Workers Builds) con su propio token. Así no hay `CLOUDFLARE_API_TOKEN` en GitHub y los previews son las Preview URLs nativas, no un Worker compartido.
+GitHub corre `ci`, **Release** y **Deploy**. El `wrangler deploy` lo hace Cloudflare (Workers Builds) al ver un push a `production`, con su propio token. Así no hay `CLOUDFLARE_API_TOKEN` en GitHub y los previews son las Preview URLs nativas.
 
 ## 2026-11-01 — pnpm, no npm
 

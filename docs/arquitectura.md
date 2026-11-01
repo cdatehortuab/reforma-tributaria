@@ -27,9 +27,9 @@ Cloudflare dirige proyectos nuevos aquí (Pages queda en mantenimiento). Servir 
 
 En local: `pnpm wrangler:dev` (`astro build` + `wrangler dev`).
 
-Producción: un tag `v*` en `main` dispara el workflow `release`, que crea el GitHub Release y apunta la rama `production` a ese commit. Workers Builds (repo enlazado en el dashboard) usa `production` como rama de producción y publica una vez por release. Un merge a `main` o un bump de versión que aún no está tagueado no sale a producción.
+Producción: el workflow **Release** (manual, en `main`) sube `package.json`, taguea y crea el GitHub Release. El workflow **Deploy** (manual, con la versión) apunta `production` a ese tag; un rollback es el mismo workflow con una versión anterior. Workers Builds publica cuando se mueve `production`. Un merge a `main` no sale a producción.
 
-Previews: Workers Builds en ramas que no son `production` (`dev`, PRs). GitHub Actions no despliega; no hay token de Cloudflare en GitHub.
+Previews: Workers Builds en ramas que no son `production` (`dev`, PRs). GitHub no guarda un token de Cloudflare.
 
 ## CSP y privacidad
 

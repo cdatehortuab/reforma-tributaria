@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Released semver to put in production, without the v prefix
+        required: true
+        type: string
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  guard:
+    name: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Run Deploy from main, not ${{ github.ref }}"
+          exit 1
+
+  deploy:
+    name: deploy
+    needs: guard
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Point production at the tag
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must be X.Y.Z without a v prefix: $VERSION"
+            exit 1
+          fi
+
+          tag="v${VERSION}"
+          git fetch origin "refs/tags/${tag}:refs/tags/${tag}"
+          git fetch origin main
+          sha="$(git rev-parse "${tag}^{commit}")"
+          git merge-base --is-ancestor "$sha" origin/main
+          git push --force origin "${sha}:refs/heads/production"
+          echo "production -> ${tag} (${sha})"
