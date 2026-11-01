@@ -25,7 +25,7 @@ Cloudflare dirige proyectos nuevos aquí (Pages queda en mantenimiento). Servir 
 
 `wrangler.jsonc` apunta `assets.directory` a `./dist` y usa `not_found_handling: "404-page"` para respetar el 404 de Astro. `single-page-application` serviría `index.html` y ocultaría 404 reales.
 
-`pnpm exec wrangler deploy` sube `dist/`. En local: `pnpm wrangler:dev` (`astro build` + `wrangler dev`).
+En local: `pnpm wrangler:dev` (`astro build` + `wrangler dev`). En producción, Workers Builds (repo enlazado en el dashboard de Cloudflare) corre `pnpm build` y `pnpm exec wrangler deploy` al fusionar a `main`. Los previews de ramas distintas de `main` los publica Cloudflare; GitHub Actions no despliega.
 
 ## CSP y privacidad
 

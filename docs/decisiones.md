@@ -14,6 +14,10 @@ Las landings deben indexar y funcionar sin JavaScript. Las calculadoras son isla
 
 La garantía de privacidad tiene que ser comprobable desde la respuesta HTTP. `connect-src 'none'` impide que el front hable con red. `style-src` incluye `'unsafe-inline'` porque el HTML estático de Astro/Tailwind lleva estilos en línea; `script-src` sigue en `'self'`.
 
+## 2026-11-01 — Workers Builds, no GitHub Actions para el deploy
+
+GitHub se queda con el check `ci` (typecheck, lint, test, build), que es el que exige el ruleset de `main`. El deploy lo hace Cloudflare al conectar el repo: previews por rama, logs de build en el dashboard, sin token de cuenta en GitHub. Un workflow propio duplicaba eso y el preview compartido (`reforma-tributaria-preview`) era peor que las Preview URLs nativas.
+
 ## 2026-11-01 — pnpm, no npm
 
 Instalaciones más rápidas y un lockfile más estricto. La versión va en `packageManager` para que Corepack y CI usen la misma. El check `ci` corre `pnpm install --frozen-lockfile`.

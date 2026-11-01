@@ -41,7 +41,7 @@ El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archiv
 - `.astro/`, `.wrangler/`, `coverage/`, `node_modules/` y `.env*` tampoco.
 - El lockfile es `pnpm-lock.yaml`. No commitees `package-lock.json`.
 - Los scripts de build de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`).
-- No hay secretos en el repo. El token de Cloudflare para el deploy vive como secret de GitHub Actions (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).
+- No hay secretos en el repo. El deploy a Cloudflare lo hace Workers Builds (repo enlazado en el dashboard), no GitHub Actions. GitHub solo corre el check `ci`.
 
 ## Mapa de `docs/`
 
