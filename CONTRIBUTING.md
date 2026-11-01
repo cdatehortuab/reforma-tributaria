@@ -18,9 +18,10 @@ Nadie con acceso de escritura empuja directo a `main`. Todo cambio, incluido el 
 - CI **no** exige reseñas.
 - Quien tiene acceso de escritura fusiona sus propios pull requests sin reseña, una vez CI está verde.
 - Un contribuyente externo (sin write) también abre un PR y necesita CI verde. Antes de fusionar un PR externo, quien tiene write deja una reseña de aprobación. Esa aprobación es parte del merge, no un job de CI.
+- **Solo squash.** Merge commits y rebase están desactivados. El título del PR es el asunto del commit que queda en `main`.
 - No hay force-push a `main`.
 
-Convenciones de PR y commit: mensajes cortos en español o inglés, en modo indicativo, que expliquen el **porqué**. Un PR, un tema. Si el proyecto de ley cambia, el título o la descripción deben citar el artículo y la fuente.
+Convenciones de PR y commit: el título del PR es el mensaje de commit en `main`, así que escríbelo como tal: corto, en español o inglés, en modo indicativo, que explique el **porqué**. Un PR, un tema. Si el proyecto de ley cambia, el título o la descripción deben citar el artículo y la fuente.
 
 ## Checks, en este orden, antes de dar un cambio por terminado
 

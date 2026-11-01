@@ -2,6 +2,10 @@
 
 Registro breve. No reabrir sin un hecho nuevo (cambio de producto, de plataforma o de la ley).
 
+## 2026-11-01 — Solo squash a `main`
+
+El historial de `main` es lineal: un PR, un commit. El título del PR es el asunto. Merge commits y rebase están apagados en el repo y el ruleset de `main` solo admite squash.
+
 ## 2026-11-01 — Workers Static Assets, no Pages
 
 Cloudflare mantiene Pages en modo mantenimiento y dirige proyectos nuevos a Workers. Este sitio no necesita un Worker script: solo HTML/CSS/JS estático. Assets-only evita el tope de invocaciones del plan gratuito. `_headers` funciona igual que en Pages.
