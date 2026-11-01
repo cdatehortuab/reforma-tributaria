@@ -12,36 +12,37 @@ Este archivo es la fuente de verdad para cambiar el código. [README.md](./READM
 
 ## Política de ramas
 
-`dev` es la rama de integración y la predeterminada en GitHub. `main` es la rama de release: lo que está en producción sale de un tag sobre `main`. Nadie con acceso de escritura empuja directo a `dev` ni a `main`. Todo cambio entra por pull request y se fusiona solo con el check `ci` en verde.
+`dev` es la rama de integración y la predeterminada en GitHub. `main` es la rama de release: Workers Builds publica producción desde `main`. Nadie con acceso de escritura empuja directo a `dev` ni a `main`. Todo cambio entra por pull request y se fusiona solo con el check `ci` en verde.
 
 - CI **no** exige reseñas.
 - Quien tiene acceso de escritura fusiona sus propios pull requests sin reseña, una vez CI está verde.
 - Un contribuyente externo (sin write) abre el PR contra `dev` y necesita CI verde. Antes de fusionar un PR externo, quien tiene write deja una reseña de aprobación. Esa aprobación es parte del merge, no un job de CI.
-- No hay force-push a `dev` ni a `main`. `production` solo la actualiza el workflow **Deploy** (`github-actions[bot]`); el ruleset bloquea cualquier otro push.
+- No hay force-push a `dev` ni a `main`.
 
 ### Cambios (hacia `dev`)
 
 Los PRs de trabajo apuntan a `dev`, son atómicos (un PR, un tema) y se fusionan **solo con squash**. El título del PR es el asunto del commit que queda en `dev`. Escríbelo como mensaje de commit: corto, en español o inglés, en modo indicativo, que explique el **porqué**. Si el proyecto de ley cambia, el título o la descripción deben citar el artículo y la fuente.
 
-### Release (de `dev` a `main`)
+### Release (`release/X.Y.Z` → `main`)
 
-Un release es un PR de `dev` hacia `main`, abierto por alguien con write.
+La versión la decide el nombre de la rama. Desde `dev`:
+
+```sh
+git switch -c release/1.2.0
+```
+
+Pon `"version": "1.2.0"` en `package.json`, commitea y abre el PR contra `main`. `ci` rechaza un PR a `main` que no venga de `release/X.Y.Z` o cuyo `package.json` no coincida.
 
 GitHub no ofrece fast-forward verdadero en un PR (rebase reescribe SHA). Elige así:
 
-1. **Rebase and merge** cuando `main` no tiene commits que falten en `dev` (el caso lineal; es lo más cercano a un fast-forward).
-2. **Create a merge commit** cuando `main` sí tiene commits que no están en `dev`. Después, trae `main` de vuelta a `dev` con otro PR para no divergir.
+1. **Rebase and merge** cuando `main` no tiene commits que falten en la rama de release.
+2. **Create a merge commit** cuando sí los tiene. Después, trae `main` de vuelta a `dev` con un PR para no divergir.
 
-Squash hacia `main` está desactivado: los commits que ya están en `main` no se reescriben.
+Squash hacia `main` está desactivado.
 
-Después de fusionar ese PR, en Actions, sobre `main`:
+Al hacer push a `main`, el workflow **Release** lee `package.json`, crea el tag `vX.Y.Z` si no existe y el GitHub Release. Cloudflare publica ese push (un deploy por release: la versión ya iba en la rama).
 
-1. Corre el workflow **Release** (`patch` / `minor` / `major`). Corre los cuatro checks, abre un PR a `main` con el bump de `package.json`, lo fusiona, crea el tag `vX.Y.Z` y el GitHub Release, y sincroniza la versión a `dev`.
-2. Corre el workflow **Deploy** con esa versión. Solo ese workflow puede mover `production`; Cloudflare publica cuando esa rama se mueve.
-
-Rollback: vuelve a correr **Deploy** en `main` con una versión ya publicada, por ejemplo `1.1.0`. Eso apunta `production` al tag `v1.1.0`. No reescribe `main` ni `dev`; si el fallo debe salir también del código, revierte en `dev` y haz un release nuevo.
-
-No hagas push a `production` ni crees tags a mano.
+Rollback en vivo: en el dashboard de Cloudflare, vuelve a la versión anterior del Worker. En git: corrige en `dev` y abre un `release/X.Y.Z` nuevo. No rebobines `main`.
 
 ## Checks, en este orden, antes de dar un cambio por terminado
 
@@ -62,7 +63,7 @@ El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archiv
 - `.astro/`, `.wrangler/`, `coverage/`, `node_modules/` y `.env*` tampoco.
 - El lockfile es `pnpm-lock.yaml`. No commitees `package-lock.json`.
 - Los scripts de build de dependencias se aprueban en `pnpm-workspace.yaml` (`allowBuilds`).
-- No hay secretos en el repo. GitHub Actions corre el check `ci`, el workflow **Release** (versión + tag + GitHub Release) y el workflow **Deploy** (apunta `production` a un tag). Cloudflare Workers Builds publica producción desde `production` y previews desde el resto de ramas; no hace falta un token de Cloudflare en GitHub.
+- No hay secretos en el repo. GitHub Actions corre el check `ci` y, en cada push a `main`, el workflow **Release** (tag `vX.Y.Z` + GitHub Release). Cloudflare Workers Builds publica producción desde `main` y previews desde `dev` y el resto de ramas.
 
 ## Mapa de `docs/`
 

@@ -2,17 +2,13 @@
 
 Registro breve. No reabrir sin un hecho nuevo (cambio de producto, de plataforma o de la ley).
 
-## 2026-11-01 — Solo Actions puede escribir `production`
+## 2026-11-01 — Versión en `release/X.Y.Z`, tag en cada push a `main`
 
-Un ruleset no puede poner a GitHub Actions como bypass en un repo de usuario. `production` usa branch protection clásica: `enforce_admins`, push restringido a la app `github-actions`, force-push permitido para esa app. El workflow **Deploy** es el único que mueve la rama. **Release** sube la versión por PR a `main` (y sincroniza `dev`) para no saltarse el ruleset.
+Los PRs de trabajo van a `dev` y se fusionan con squash. Un release es un PR `release/X.Y.Z` → `main`; el nombre de la rama es la versión y debe coincidir con `package.json`. Al fusionar, el workflow **Release** crea el tag y el GitHub Release. Cloudflare publica `main` (un deploy: la versión ya iba en esa rama). No hay rama `production` ni deploy key: en un repo de usuario GitHub Actions no puede ser bypass de un ruleset.
 
-## 2026-11-01 — `dev` integra, `main` publica, squash solo hacia `dev`
+## 2026-11-01 — `dev` integra, squash solo hacia `dev`
 
-Los PRs de trabajo van a `dev` (rama predeterminada) y se fusionan con squash; el título del PR es el asunto. Un release es un PR de `dev` a `main`: rebase and merge cuando la historia es lineal, merge commit cuando no. Squash hacia `main` está apagado.
-
-## 2026-11-01 — Producción de Cloudflare solo vía workflow Deploy
-
-Workers Builds no dispara por tags. El workflow **Release** (manual, desde `main`) sube la versión, taguea y crea el GitHub Release. El workflow **Deploy** (manual, versión X.Y.Z) es lo único que puede mover `production`; un rollback es el mismo workflow con una versión anterior. El ruleset de `production` bloquea pushes humanos; solo `github-actions[bot]` tiene bypass. GitHub no guarda un token de Cloudflare.
+`dev` es la rama predeterminada. Squash hacia `main` está apagado: rebase and merge cuando la historia es lineal, merge commit cuando no.
 
 ## 2026-11-01 — Workers Static Assets, no Pages
 
@@ -28,7 +24,7 @@ La garantía de privacidad tiene que ser comprobable desde la respuesta HTTP. `c
 
 ## 2026-11-01 — Workers Builds, no `wrangler deploy` desde GitHub
 
-GitHub corre `ci`, **Release** y **Deploy**. El `wrangler deploy` lo hace Cloudflare (Workers Builds) al ver un push a `production`, con su propio token. Así no hay `CLOUDFLARE_API_TOKEN` en GitHub y los previews son las Preview URLs nativas.
+GitHub corre `ci` y **Release** (tag + GitHub Release). El `wrangler deploy` lo hace Cloudflare al ver un push a `main`. No hay `CLOUDFLARE_API_TOKEN` en GitHub. Previews en `dev` y PRs.
 
 ## 2026-11-01 — pnpm, no npm
 
