@@ -53,7 +53,7 @@ pnpm test
 pnpm build
 ```
 
-CI ejecuta los mismos cuatro. `pnpm lint` usa `--max-warnings=0`: una advertencia falla el build. El gestor de paquetes es pnpm (`packageManager` en `package.json`); no uses `npm` ni `package-lock.json`.
+CI ejecuta los mismos cuatro. Viven en `.github/actions/checks` y los llaman dos workflows: PRs y pushes a `dev`, y PRs a `main` (este último además alinea la versión). `pnpm lint` usa `--max-warnings=0`: una advertencia falla el build. El gestor de paquetes es pnpm (`packageManager` en `package.json`); no uses `npm` ni `package-lock.json`.
 
 El hook de pre-commit corre `eslint --fix` y `prettier --write` sobre los archivos en staging.
 

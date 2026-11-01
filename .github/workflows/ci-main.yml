@@ -2,11 +2,10 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main, dev]
+    branches: [main]
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-main-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -22,20 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.head_ref || github.ref }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
+          ref: ${{ github.head_ref }}
 
       - name: Align package.json with release/X.Y.Z
         id: version
-        if: github.event_name == 'pull_request' && github.base_ref == 'main'
         env:
           HEAD_REF: ${{ github.head_ref }}
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
@@ -69,24 +58,10 @@ jobs:
           JS
           echo "bumped=true" >> "$GITHUB_OUTPUT"
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Format package.json after a version bump
-        if: steps.version.outputs.bumped == 'true'
-        run: pnpm exec prettier --write package.json
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+      - name: Checks
+        uses: ./.github/actions/checks
+        with:
+          format-package-json: ${{ steps.version.outputs.bumped }}
 
       - name: Push the version bump to the release branch
         if: steps.version.outputs.bumped == 'true'
