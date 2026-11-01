@@ -36,7 +36,7 @@ Squash hacia `main` está desactivado: los commits que ya están en `main` no se
 
 Después de fusionar ese PR, en Actions, sobre `main`:
 
-1. Corre el workflow **Release** (`patch` / `minor` / `major`). Sube `package.json`, hace commit en `main`, crea el tag `vX.Y.Z` y el GitHub Release. Luego intenta cherry-pick del commit de versión a `dev`.
+1. Corre el workflow **Release** (`patch` / `minor` / `major`). Corre los cuatro checks, abre un PR a `main` con el bump de `package.json`, lo fusiona, crea el tag `vX.Y.Z` y el GitHub Release, y sincroniza la versión a `dev`.
 2. Corre el workflow **Deploy** con esa versión. Solo ese workflow puede mover `production`; Cloudflare publica cuando esa rama se mueve.
 
 Rollback: vuelve a correr **Deploy** en `main` con una versión ya publicada, por ejemplo `1.1.0`. Eso apunta `production` al tag `v1.1.0`. No reescribe `main` ni `dev`; si el fallo debe salir también del código, revierte en `dev` y haz un release nuevo.

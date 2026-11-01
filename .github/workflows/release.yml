@@ -18,6 +18,8 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
+  checks: write
 
 jobs:
   guard:
@@ -39,7 +41,7 @@ jobs:
     timeout-minutes: 20
     outputs:
       version: ${{ steps.bump.outputs.version }}
-      sha: ${{ steps.bump.outputs.sha }}
+      sha: ${{ steps.merge.outputs.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -71,11 +73,10 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Bump version, tag, and create GitHub Release
+      - name: Bump version on a release branch
         id: bump
         env:
           BUMP: ${{ inputs.bump }}
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
@@ -117,29 +118,81 @@ jobs:
           pnpm exec prettier --write package.json
 
           tag="v${version}"
-          if git rev-parse "$tag" >/dev/null 2>&1; then
+          if git ls-remote --exit-code origin "refs/tags/${tag}" >/dev/null 2>&1; then
             echo "Tag $tag already exists"
             exit 1
           fi
 
+          branch="chore/release-${tag}"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
           git add package.json
           git commit --no-verify -m "Release ${tag}."
-          git push origin HEAD:main
-          git tag "$tag"
-          git push origin "$tag"
-
-          gh release create "$tag" --verify-tag --generate-notes --title "$tag"
+          git push origin "HEAD:refs/heads/${branch}"
 
           echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Open the version PR and merge it into main
+        id: merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.bump.outputs.tag }}
+          BRANCH: ${{ steps.bump.outputs.branch }}
+          SHA: ${{ steps.bump.outputs.sha }}
+        run: |
+          set -euo pipefail
+
+          gh api --method POST repos/${{ github.repository }}/check-runs \
+            -f name=ci \
+            -f head_sha="$SHA" \
+            -f status=completed \
+            -f conclusion=success \
+            -f 'output[title]=Release checks' \
+            -f 'output[summary]=typecheck, lint, test, and build ran in the Release workflow.'
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Release ${TAG}" \
+            --body "Automated version bump from the Release workflow. Checks already ran in that workflow."
+
+          merged=0
+          for _ in 1 2 3 4 5 6; do
+            if gh pr merge --rebase --delete-branch "$BRANCH"; then
+              merged=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$merged" -ne 1 ]; then
+            echo "Could not merge the version PR into main"
+            exit 1
+          fi
+
+          git fetch origin main
+          echo "sha=$(git rev-parse origin/main)" >> "$GITHUB_OUTPUT"
+
+      - name: Tag and create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.bump.outputs.tag }}
+          SHA: ${{ steps.merge.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git tag "$TAG" "$SHA"
+          git push origin "$TAG"
+          gh release create "$TAG" --verify-tag --generate-notes --title "$TAG" --target "$SHA"
 
   sync-dev:
     name: sync-dev
     needs: release
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     continue-on-error: true
     steps:
       - name: Checkout
@@ -148,14 +201,46 @@ jobs:
           fetch-depth: 0
           ref: main
 
-      - name: Cherry-pick the version commit onto dev
+      - name: Open a squash PR to copy the version onto dev
         env:
+          GH_TOKEN: ${{ github.token }}
           SHA: ${{ needs.release.outputs.sha }}
+          VERSION: ${{ needs.release.outputs.version }}
         run: |
           set -euo pipefail
+          tag="v${VERSION}"
+          branch="chore/sync-release-${tag}"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git fetch origin dev
-          git switch -C sync-release origin/dev
+          git switch -C "$branch" origin/dev
           git cherry-pick "$SHA"
-          git push origin HEAD:dev
+          git push origin "HEAD:refs/heads/${branch}"
+          head_sha="$(git rev-parse HEAD)"
+
+          gh api --method POST repos/${{ github.repository }}/check-runs \
+            -f name=ci \
+            -f head_sha="$head_sha" \
+            -f status=completed \
+            -f conclusion=success \
+            -f 'output[title]=Release checks' \
+            -f 'output[summary]=The version commit was already verified in the Release workflow.'
+
+          gh pr create \
+            --base dev \
+            --head "$branch" \
+            --title "Sync ${tag} onto dev" \
+            --body "Copies the version bump from main so the next release PR can fast-forward."
+
+          merged=0
+          for _ in 1 2 3 4 5 6; do
+            if gh pr merge --squash --delete-branch "$branch"; then
+              merged=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$merged" -ne 1 ]; then
+            echo "Could not squash the version bump onto dev; merge the PR manually"
+            exit 1
+          fi

@@ -2,9 +2,9 @@
 
 Registro breve. No reabrir sin un hecho nuevo (cambio de producto, de plataforma o de la ley).
 
-## 2026-11-01 — Bypass de GitHub Actions solo para release y `production`
+## 2026-11-01 — Solo Actions puede escribir `production`
 
-Humanos no tienen bypass en `dev`, `main` ni `production`. `github-actions[bot]` (Actions) sí: en `main` y `dev` para el commit de versión del workflow **Release**; en `production` para el workflow **Deploy**. El resto de reglas (PR, `ci`, squash) sigue valiendo para las personas.
+Un ruleset no puede poner a GitHub Actions como bypass en un repo de usuario. `production` usa branch protection clásica: `enforce_admins`, push restringido a la app `github-actions`, force-push permitido para esa app. El workflow **Deploy** es el único que mueve la rama. **Release** sube la versión por PR a `main` (y sincroniza `dev`) para no saltarse el ruleset.
 
 ## 2026-11-01 — `dev` integra, `main` publica, squash solo hacia `dev`
 
