@@ -4,7 +4,7 @@ Registro breve. No reabrir sin un hecho nuevo (cambio de producto, de plataforma
 
 ## 2026-11-01 — Versión en `release/X.Y.Z`, tag en cada push a `main`
 
-Los PRs de trabajo van a `dev` y se fusionan con squash. Un release es un PR `release/X.Y.Z` → `main`; el nombre de la rama es la versión y debe coincidir con `package.json`. Al fusionar, el workflow **Release** crea el tag y el GitHub Release. Cloudflare publica `main` (un deploy: la versión ya iba en esa rama). No hay rama `production` ni deploy key: en un repo de usuario GitHub Actions no puede ser bypass de un ruleset.
+Los PRs de trabajo van a `dev` y se fusionan con squash. Un release es un PR `release/X.Y.Z` → `main`; el nombre de la rama es la versión. `ci` actualiza `package.json` si aún no coincide. Al fusionar, el workflow **Release** crea el tag y el GitHub Release. Cloudflare publica `main` (un deploy: la versión ya iba en esa rama). No hay rama `production` ni deploy key: en un repo de usuario GitHub Actions no puede ser bypass de un ruleset.
 
 ## 2026-11-01 — `dev` integra, squash solo hacia `dev`
 

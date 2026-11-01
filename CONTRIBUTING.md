@@ -31,7 +31,7 @@ La versión la decide el nombre de la rama. Desde `dev`:
 git switch -c release/1.2.0
 ```
 
-Pon `"version": "1.2.0"` en `package.json`, commitea y abre el PR contra `main`. `ci` rechaza un PR a `main` que no venga de `release/X.Y.Z` o cuyo `package.json` no coincida.
+Abre el PR contra `main`. `ci` exige que la rama se llame `release/X.Y.Z` y, si `package.json` aún no tiene esa versión, la escribe y la empuja al PR.
 
 GitHub no ofrece fast-forward verdadero en un PR (rebase reescribe SHA). Elige así:
 
