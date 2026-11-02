@@ -19,6 +19,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "wrangler:dev": "astro build && wrangler dev",
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
@@ -51,7 +52,8 @@
     "simple-git-hooks": "^2.14.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "wrangler": "^4.156.0"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"
