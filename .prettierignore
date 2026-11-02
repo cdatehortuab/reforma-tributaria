@@ -1,0 +1,8 @@
+dist
+node_modules
+.astro
+.wrangler
+coverage
+package-lock.json
+pnpm-lock.yaml
+CHANGELOG.md
