@@ -1,4 +1,10 @@
+import { RegimenTributario } from '../entrada';
+
 import { ACTUALIZADO_AL } from './constants';
+
+import type { ParametrosRenta } from '../renta';
+import type { ParametrosRetencion } from '../retencion';
+import type { ParametrosSalud } from '../salario';
 
 /**
  * Parámetros de la normativa vigente (Estatuto Tributario y Ley 100).
@@ -8,7 +14,7 @@ import { ACTUALIZADO_AL } from './constants';
  * implementarse (`renta.ts`, `salario.ts`, …), no este archivo.
  */
 export const vigente = {
-  regimen: 'vigente',
+  regimen: RegimenTributario.VIGENTE,
   renta: {
     tabla241: {
       tramos: [
@@ -92,7 +98,7 @@ export const vigente = {
         actualizadoAl: ACTUALIZADO_AL,
       },
     },
-  },
+  } as const satisfies ParametrosRenta,
   retencion: {
     tabla383: {
       tramos: [
@@ -146,7 +152,7 @@ export const vigente = {
         actualizadoAl: ACTUALIZADO_AL,
       },
     },
-  },
+  } as const satisfies ParametrosRetencion,
   salud: {
     tarifaEmpleado: 0.04,
     tarifaEmpleador: 0.085,
@@ -157,7 +163,7 @@ export const vigente = {
         'Ley 100 de 1993, art. 204. Cotización total 12,5 %: empleador 8,5 %, empleado 4 %. Independientes pagan el 12,5 %. Pensionados: tabla propia del parágrafo 5 (no es este módulo).',
       actualizadoAl: ACTUALIZADO_AL,
     },
-  },
+  } as const satisfies ParametrosSalud,
   aportesPatronales: {
     exoneracionMenosDeSmlmv: 10,
     fuente: {

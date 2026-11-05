@@ -208,3 +208,46 @@ export const DEDUCCION_SALUD_ART_387 = {
   readonly topeMensualUvt: number;
   readonly fuente: FuenteParametro;
 };
+
+/** Meses del año gravable. El motor anualiza el salario mensual × 12. */
+export const MESES_DEL_ANIO = 12 as const;
+
+/**
+ * Deducción de intereses o corrección monetaria de préstamos para vivienda.
+ * El tope mensual rige la retención (DUR 1625 art. 1.2.4.1.23); el anual, la
+ * declaración (ET art. 119). El PL 477 no los modifica.
+ */
+export const INTERESES_VIVIENDA = {
+  topeMensualUvt: 100,
+  topeAnualUvt: 1200,
+  fuente: {
+    articulo: 'ET art. 119 y art. 387',
+    documento:
+      'Estatuto Tributario, art. 119 (tope anual 1.200 UVT) y art. 387 (disminución de la base de retención). Decreto 1625 de 2016, art. 1.2.4.1.23: tope mensual de 100 UVT. El PL 477 no modifica estos topes.',
+    actualizadoAl: ACTUALIZADO_AL,
+  },
+} as const satisfies {
+  readonly topeMensualUvt: number;
+  readonly topeAnualUvt: number;
+  readonly fuente: FuenteParametro;
+};
+
+/**
+ * Aportes voluntarios a pensiones (seguros privados / fondos voluntarios) y
+ * cuentas AFC. Son renta exenta, no ingreso no constitutivo: entran al límite
+ * del 40 % del art. 388 / art. 336.
+ */
+export const RENTA_EXENTA_APORTES_VOLUNTARIOS = {
+  porcentajeIngresoLaboral: 0.3,
+  topeAnualUvt: 3800,
+  fuente: {
+    articulo: 'ET art. 126-1',
+    documento:
+      'Estatuto Tributario, art. 126-1, modificado por la Ley 1819 de 2016, art. 15. Junto con los aportes a cuentas AFC (art. 126-4), hasta el 30 % del ingreso laboral o tributario del año y 3.800 UVT. El PL 477 no modifica este tope.',
+    actualizadoAl: ACTUALIZADO_AL,
+  },
+} as const satisfies {
+  readonly porcentajeIngresoLaboral: number;
+  readonly topeAnualUvt: number;
+  readonly fuente: FuenteParametro;
+};

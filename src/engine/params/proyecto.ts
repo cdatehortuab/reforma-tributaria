@@ -1,5 +1,10 @@
+import { RegimenTributario } from '../entrada';
+
 import { ACTUALIZADO_AL, DOCUMENTO_PL_477, URL_PL_477 } from './constants';
 
+import type { ParametrosRenta } from '../renta';
+import type { ParametrosRetencion } from '../retencion';
+import type { ParametrosSalud } from '../salario';
 import type { FuenteParametro } from './constants';
 
 function fuentePl(articulo: string): FuenteParametro {
@@ -19,7 +24,7 @@ function fuentePl(articulo: string): FuenteParametro {
  * implementarse (`renta.ts`, `salario.ts`, …), no este archivo.
  */
 export const proyecto = {
-  regimen: 'proyecto',
+  regimen: RegimenTributario.PROYECTO,
   renta: {
     tabla241: {
       tramos: [
@@ -77,7 +82,7 @@ export const proyecto = {
       maxDependientes: 0,
       fuente: fuentePl('PL 477 art. 106 (deroga ET art. 336 num. 3 inc. 2)'),
     },
-  },
+  } as const satisfies ParametrosRenta,
   retencion: {
     tabla383: {
       tramos: [
@@ -124,6 +129,11 @@ export const proyecto = {
       articuloRetencion: 'ET art. 392',
       fuente: fuentePl('PL 477 art. 50 par. 1'),
     },
+  } as const satisfies ParametrosRetencion & {
+    readonly independientesConCostos: {
+      readonly articuloRetencion: string;
+      readonly fuente: FuenteParametro;
+    };
   },
   salud: {
     vigenciaDesde: '2027-01-01',
@@ -152,6 +162,13 @@ export const proyecto = {
       tarifaEmpleador: 0.015,
     },
     fuente: fuentePl('PL 477 art. 21 (Ley 100 de 1993, art. 204)'),
+  } as const satisfies ParametrosSalud & {
+    readonly vigenciaDesde: string;
+    readonly regimenesEspecialesYExcepcion: {
+      readonly recargoTrabajadorDesde2Hasta3Smlmv: number;
+      readonly recargoTrabajadorMasDe3Smlmv: number;
+      readonly tarifaEmpleador: number;
+    };
   },
   aportesPatronales: {
     vigenciaDesde: '2027-01-01',
