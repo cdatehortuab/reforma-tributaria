@@ -15,11 +15,11 @@ Corte de esta bitácora: **2026-11-02**. Texto del PL 477: el radicado el 29 de 
 
 ## Dónde viven en código
 
-| Constante                                            | Archivo                          |
-| :--------------------------------------------------- | :------------------------------- |
-| UVT, SMLMV, auxilio de transporte, pensión, FSP, IBC | `src/engine/params/constants.ts` |
-| Tablas y topes de la norma actual                    | `src/engine/params/vigente.ts`   |
-| Tablas y topes del PL 477                            | `src/engine/params/proyecto.ts`  |
+| Constante                                                   | Archivo                          |
+| :---------------------------------------------------------- | :------------------------------- |
+| UVT, SMLMV, auxilio, pensión, FSP, IBC, arts. 387/119/126-1 | `src/engine/params/constants.ts` |
+| Tablas y topes de la norma actual                           | `src/engine/params/vigente.ts`   |
+| Tablas y topes del PL 477                                   | `src/engine/params/proyecto.ts`  |
 
 La comparación «hoy vs. reforma» usa **los mismos** UVT y SMLMV en ambos escenarios. Un interruptor aparte puede mostrar valores proyectados de 2027 y 2028; eso no debe mezclarse con el aislamiento del efecto legal.
 
@@ -99,13 +99,15 @@ Texto del Estatuto Tributario, contrastado en [estatuto.co/241](https://estatuto
 
 ### Art. 206 numeral 10 y art. 336
 
-| Concepto                                | Valor vigente                                                 | Fuente                                         |
-| :-------------------------------------- | :------------------------------------------------------------ | :--------------------------------------------- |
-| Renta exenta laboral                    | 25 %, tope **790 UVT**/año                                    | ET art. 206 num. 10                            |
-| Límite conjunto exentas + deducciones   | 40 % del ingreso neto, tope **1.340 UVT**/año                 | ET art. 336 num. 3 inc. 1                      |
-| Deducción adicional por dependiente     | **72 UVT** × hasta 4, fuera del tope                          | ET art. 336 num. 3 inc. 2                      |
-| Deducción por dependientes en retención | 10 % del ingreso bruto laboral, tope 32 UVT/mes (384 UVT/año) | ET art. 387 inc. 2; el PL 477 **no** la deroga |
-| Medicina prepagada / póliza de salud    | Hasta 16 UVT/mes                                              | ET art. 387 inc. 2                             |
+| Concepto                                | Valor vigente                                                              | Fuente                                           |
+| :-------------------------------------- | :------------------------------------------------------------------------- | :----------------------------------------------- |
+| Renta exenta laboral                    | 25 %, tope **790 UVT**/año                                                 | ET art. 206 num. 10                              |
+| Límite conjunto exentas + deducciones   | 40 % del ingreso neto, tope **1.340 UVT**/año                              | ET art. 336 num. 3 inc. 1                        |
+| Deducción adicional por dependiente     | **72 UVT** × hasta 4, fuera del tope                                       | ET art. 336 num. 3 inc. 2                        |
+| Deducción por dependientes en retención | 10 % del ingreso bruto laboral, tope 32 UVT/mes (384 UVT/año)              | ET art. 387 inc. 2; el PL 477 **no** la deroga   |
+| Medicina prepagada / póliza de salud    | Hasta 16 UVT/mes                                                           | ET art. 387 inc. 2                               |
+| Intereses de crédito de vivienda        | 100 UVT/mes en retención; **1.200 UVT**/año en la declaración              | ET art. 119 y art. 387; DUR 1625 art. 1.2.4.1.23 |
+| Aportes voluntarios a pensión y AFC     | Renta exenta: 30 % del ingreso laboral y **3.800 UVT**/año, sujeta al 40 % | ET art. 126-1; el PL 477 no la modifica          |
 
 ### Salud vigente y exoneración patronal
 
