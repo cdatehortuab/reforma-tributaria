@@ -36,6 +36,19 @@ function entrada(
   };
 }
 
+function netoDelMes(
+  datos: EntradaLaboral,
+  aportes: { readonly total: number; readonly auxilioTransporte: number },
+  retencionTotal: number,
+): number {
+  return (
+    Math.max(0, datos.salarioMensual)
+    + aportes.auxilioTransporte
+    - aportes.total
+    - retencionTotal
+  );
+}
+
 describe('calcularRetencion procedimiento 1', () => {
   it('no retiene a 1 SMLMV ni hoy ni con el proyecto', () => {
     const datos = entrada(smlmv);
@@ -146,11 +159,15 @@ describe('proyectarRetencion arrastra cupos anuales', () => {
       aportes.total,
       vigente.retencion,
       vigente.renta,
+      aportes.auxilioTransporte,
     );
 
     expect(proyeccion.meses).toHaveLength(MESES_DEL_ANIO);
     expect(proyeccion.retencionConCupo.total).toBe(enero.total);
     expect(proyeccion.meses[0]?.retencion.total).toBe(enero.total);
+    expect(proyeccion.meses[0]?.neto).toBe(
+      netoDelMes(datos, aportes, enero.total),
+    );
   });
 
   it('no sube la retención en 1 SMLMV: los cupos no se agotan', () => {
@@ -161,13 +178,19 @@ describe('proyectarRetencion arrastra cupos anuales', () => {
       aportes.total,
       vigente.retencion,
       vigente.renta,
+      aportes.auxilioTransporte,
     );
+    const netoSinRetencion = netoDelMes(datos, aportes, 0);
 
+    expect(aportes.auxilioTransporte).toBeGreaterThan(0);
     expect(proyeccion.mesEnQueAumenta).toBeUndefined();
     expect(proyeccion.mesEnQueSeAgota25).toBeUndefined();
     expect(proyeccion.meses.every((item) => item.retencion.total === 0)).toBe(
       true,
     );
+    expect(
+      proyeccion.meses.every((item) => item.neto === netoSinRetencion),
+    ).toBe(true);
   });
 
   it('sube la retención cuando se agota el 25 % y el proyecto se agota antes', () => {
@@ -179,12 +202,14 @@ describe('proyectarRetencion arrastra cupos anuales', () => {
       hoyAportes.total,
       vigente.retencion,
       vigente.renta,
+      hoyAportes.auxilioTransporte,
     );
     const reforma = proyectarRetencion(
       datos,
       reformaAportes.total,
       proyecto.retencion,
       proyecto.renta,
+      reformaAportes.auxilioTransporte,
     );
 
     expect(hoy.mesEnQueAumenta).toBeDefined();
@@ -198,6 +223,18 @@ describe('proyectarRetencion arrastra cupos anuales', () => {
     expect(reforma.mesEnQueAumenta).toBeLessThanOrEqual(
       hoy.mesEnQueAumenta ?? MESES_DEL_ANIO,
     );
+    expect(
+      hoy.meses.every(
+        (item) =>
+          item.neto === netoDelMes(datos, hoyAportes, item.retencion.total),
+      ),
+    ).toBe(true);
+    expect(
+      reforma.meses.every(
+        (item) =>
+          item.neto === netoDelMes(datos, reformaAportes, item.retencion.total),
+      ),
+    ).toBe(true);
   });
 
   it('sigue aplicando el tope mensual de 32 UVT en diciembre', () => {
@@ -208,6 +245,7 @@ describe('proyectarRetencion arrastra cupos anuales', () => {
       aportes.total,
       vigente.retencion,
       vigente.renta,
+      aportes.auxilioTransporte,
     );
     const diciembre = proyeccion.meses[MESES_DEL_ANIO - 1];
     const tope32 = Math.round(
@@ -220,5 +258,8 @@ describe('proyectarRetencion arrastra cupos anuales', () => {
           linea.concepto.includes('art. 387') && linea.valor === -tope32,
       ),
     ).toBe(true);
+    expect(diciembre?.neto).toBe(
+      netoDelMes(datos, aportes, diciembre?.retencion.total ?? 0),
+    );
   });
 });
