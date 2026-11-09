@@ -163,6 +163,28 @@ describe('compararLaboral — 16 perfiles', () => {
       proyecto.netoMensual,
     );
     expect(vigente.proyeccionRetencion.meses).toHaveLength(12);
+    expect(vigente.netoMensual).toBe(
+      vigente.proyeccionRetencion.meses[0]?.neto,
+    );
+    expect(proyecto.netoMensual).toBe(
+      proyecto.proyeccionRetencion.meses[0]?.neto,
+    );
+    expect(vigente.netoMensualTrasAgotarCupos).toBe(
+      vigente.proyeccionRetencion.meses[11]?.neto,
+    );
+    expect(proyecto.netoMensualTrasAgotarCupos).toBe(
+      proyecto.proyeccionRetencion.meses[11]?.neto,
+    );
+    expect(
+      vigente.proyeccionRetencion.meses.every(
+        (item) =>
+          item.neto
+          === 15 * smlmv
+            + vigente.aportes.auxilioTransporte
+            - vigente.aportes.total
+            - item.retencion.total,
+      ),
+    ).toBe(true);
   });
 
   it('los 72 UVT por dependiente solo alivian la renta vigente', () => {

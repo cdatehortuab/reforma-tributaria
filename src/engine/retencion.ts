@@ -24,6 +24,8 @@ export interface ResultadoRetencion extends ResultadoCalculo {
 export interface MesRetencion {
   readonly mes: number;
   readonly retencion: ResultadoRetencion;
+  /** Salario + auxilio de transporte − aportes − retención de este mes. */
+  readonly neto: number;
 }
 
 export interface ProyeccionRetencion {
@@ -90,16 +92,20 @@ export function calcularRetencion(
  * Doce meses iguales, arrastrando los cupos anuales del 25 % y del tope
  * global. No incluye prima de servicios: en la vida real el salto puede
  * llegar un mes antes. `retencionConCupo` es enero; el aviso de la UI
- * usa `mesEnQueAumenta`.
+ * usa `mesEnQueAumenta`. `neto` de cada mes usa los mismos insumos que
+ * `netoMensual`: salario + auxilio − aportes − retención de ese mes.
  */
 export function proyectarRetencion(
   entrada: EntradaLaboral,
   aportesObligatoriosMensual: number,
   params: ParametrosRetencion,
   cedula: ParametrosCedula,
+  auxilioTransporte: number,
 ): ProyeccionRetencion {
   const meses: MesRetencion[] = [];
   let cupos = cuposCedulaIniciales(cedula);
+  const salarioMasAuxilio =
+    Math.max(0, entrada.salarioMensual) + auxilioTransporte;
 
   for (let mes = 1; mes <= MESES_DEL_ANIO; mes += 1) {
     const retencion = calcularRetencion(
@@ -110,7 +116,11 @@ export function proyectarRetencion(
       cupos,
     );
     cupos = retencion.cuposRestantes;
-    meses.push({ mes, retencion });
+    meses.push({
+      mes,
+      retencion,
+      neto: salarioMasAuxilio - aportesObligatoriosMensual - retencion.total,
+    });
   }
 
   const primero = mesEn(meses, 0);
